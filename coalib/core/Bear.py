@@ -180,7 +180,7 @@ class Bear:
                 cls.MAINTAINERS_EMAILS)
 
     @enforce_signature
-    def __init__(self, section: Section, file_dict: dict):
+    def __init__(self, section: Section, file_dict: dict, cache: Cache=None):
         """
         Constructs a new bear.
 
@@ -189,6 +189,13 @@ class Bear:
         :param file_dict:
             The file-dictionary containing a mapping of filenames to the
             according file contents.
+        :param cache:
+            A cache the bear can use to speed up runs.
+
+            The cache stores the results that were returned last time from the
+            parameters passed to ``execute_tasks()``. If the section and
+            parameters to ``execute_tasks`` are the same from a previous run,
+            the cache will be looked up instead of executing ``self.analyze``.
         :raises RuntimeError:
             Raised when bear requirements are not fulfilled.
         """
@@ -435,6 +442,7 @@ class Bear:
         :return:
             A list of results from the bear.
         """
+
         return list(self.analyze(*args, **kwargs))
 
     def analyze(self, *args, **kwargs):
