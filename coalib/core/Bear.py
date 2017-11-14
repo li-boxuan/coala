@@ -1,9 +1,11 @@
 from collections import defaultdict
 from functools import partial
+from hashlib import sha1
 import inspect
 import logging
 from os import makedirs
 from os.path import join, abspath, exists
+import pickle
 
 from appdirs import user_data_dir
 
@@ -16,6 +18,12 @@ from coalib.results.Result import Result
 from coalib.settings.ConfigurationGathering import get_config_directory
 from coalib.settings.FunctionMetadata import FunctionMetadata
 from coalib.settings.Section import Section
+
+
+def calculate_persistent_hash(obj):
+    fingerprint_generator = sha1()
+    fingerprint_generator.update(pickle.dumps(obj, protocol=4))
+    return fingerprint_generator.digest()
 
 
 class Bear:
@@ -180,7 +188,7 @@ class Bear:
                 cls.MAINTAINERS_EMAILS)
 
     @enforce_signature
-    def __init__(self, section: Section, file_dict: dict):
+    def __init__(self, section: Section, file_dict: dict, cache: dict=None):
         """
         Constructs a new bear.
 
@@ -189,11 +197,20 @@ class Bear:
         :param file_dict:
             The file-dictionary containing a mapping of filenames to the
             according file contents.
+        :param cache:
+            A cache the bear can use to speed up runs. If ``None``, no cache
+            will be used.
+
+            The cache stores the results that were returned last time from the
+            parameters passed to ``execute_task()``. If the section and
+            parameters to ``execute_task`` are the same from a previous run,
+            the cache will be looked up instead of executing ``self.analyze``.
         :raises RuntimeError:
             Raised when bear requirements are not fulfilled.
         """
         self.section = section
         self.file_dict = file_dict
+        self.cache = cache
 
         self._dependency_results = defaultdict(list)
 
@@ -435,7 +452,18 @@ class Bear:
         :return:
             A list of results from the bear.
         """
-        return list(self.analyze(*args, **kwargs))
+        if self.cache is None:
+            results = list(self.analyze(*args, **kwargs))
+        else:
+            fingerprint = calculate_persistent_hash((args, kwargs))
+
+            if fingerprint in self.cache:
+                results = self.cache[fingerprint]
+            else:
+                results = list(self.analyze(*args, **kwargs))
+                self.cache[fingerprint] = results
+
+        return results
 
     def analyze(self, *args, **kwargs):
         """
