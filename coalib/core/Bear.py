@@ -201,6 +201,7 @@ class Bear:
         """
         self.section = section
         self.file_dict = file_dict
+        self.cache = cache
 
         self._dependency_results = defaultdict(list)
 
@@ -442,8 +443,16 @@ class Bear:
         :return:
             A list of results from the bear.
         """
+        if self.cache is None:
+            results = list(self.analyze(*args, **kwargs))
+        else:
+            if (args, kwargs) in self.cache:
+                results = self.cache[(args, kwargs)]
+            else:
+                results = list(self.analyze(*args, **kwargs))
+                self.cache[(args, kwargs)] = results
 
-        return list(self.analyze(*args, **kwargs))
+        return results
 
     def analyze(self, *args, **kwargs):
         """

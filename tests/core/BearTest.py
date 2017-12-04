@@ -254,3 +254,7 @@ class BearTest(unittest.TestCase):
             'REQUIREMENTS': set()}
 
         self.assertEqual(result, expected)
+
+# TODO Caching tests:
+# TODO - test when cache=None (two runs and ensure non-caching)
+# TODO - test when cache is empty (two runs, cache reuse)

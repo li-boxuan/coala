@@ -1,3 +1,5 @@
+from frozendict import frozendict
+
 from coalib.core.Bear import Bear
 from coalib.settings.FunctionMetadata import FunctionMetadata
 
@@ -19,13 +21,11 @@ class ProjectBear(Bear):
         """
         Bear.__init__(self, section, file_dict)
 
-        self._kwargs = self.get_metadata().create_params_from_section(section)
+        self._kwargs = frozendict(
+            self.get_metadata().create_params_from_section(section))
 
     def execute_task(self, args, kwargs):
-        # To optimize performance a bit and memory usage, we use args and
-        # kwargs from this class instance, instead of passing them via the
-        # task.
-        return Bear.execute_task(self, (self.file_dict,), self._kwargs)
+        return Bear.execute_task(self, (self.file_dict,), kwargs)
 
     @classmethod
     def get_metadata(cls):
@@ -39,4 +39,4 @@ class ProjectBear(Bear):
             omit={'self', 'files'})
 
     def generate_tasks(self):
-        return (tuple(), {}),
+        return (tuple(), self._kwargs),
