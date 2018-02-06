@@ -1,9 +1,11 @@
 from collections import defaultdict
 from functools import partial
+from hashlib import sha1
 import inspect
 import logging
 from os import makedirs
 from os.path import join, abspath, exists
+import pickle
 
 from appdirs import user_data_dir
 
@@ -446,11 +448,15 @@ class Bear:
         if self.cache is None:
             results = list(self.analyze(*args, **kwargs))
         else:
-            if (args, kwargs) in self.cache:
-                results = self.cache[(args, kwargs)]
+            fingerprint_generator = sha1()
+            fingerprint_generator.update(pickle.dumps((args, kwargs)))
+            fingerprint = fingerprint_generator.digest()
+
+            if fingerprint in self.cache:
+                results = self.cache[fingerprint]
             else:
                 results = list(self.analyze(*args, **kwargs))
-                self.cache[(args, kwargs)] = results
+                self.cache[fingerprint] = results
 
         return results
 
