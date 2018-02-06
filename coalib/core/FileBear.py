@@ -1,5 +1,3 @@
-from frozendict import frozendict
-
 from coalib.core.Bear import Bear
 from coalib.settings.FunctionMetadata import FunctionMetadata
 
@@ -20,11 +18,7 @@ class FileBear(Bear):
         """
         Bear.__init__(self, section, file_dict)
 
-        self._kwargs = frozendict(
-            self.get_metadata().create_params_from_section(section))
-
-    def execute_task(self, args, kwargs):
-        return Bear.execute_task(self, args, kwargs)
+        self._kwargs = self.get_metadata().create_params_from_section(section)
 
     @classmethod
     def get_metadata(cls):

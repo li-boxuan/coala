@@ -35,3 +35,4 @@ class Cache(dict):
 # --export-cache <dir>/<filename> / --import-cache <dir>/<filename>
 #     TODO: No priority right now, but super useful for distributed stuff or to cache things
 #           across CI builds!
+# compression?
