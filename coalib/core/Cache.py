@@ -36,3 +36,4 @@ class Cache(dict):
 #     TODO: No priority right now, but super useful for distributed stuff or to cache things
 #           across CI builds!
 # compression?
+# What about using pickletools.optimize? I guess this can be an additional flag too.
