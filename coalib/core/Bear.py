@@ -202,8 +202,8 @@ class Bear:
             will be used.
 
             The cache stores the results that were returned last time from the
-            parameters passed to ``execute_tasks()``. If the section and
-            parameters to ``execute_tasks`` are the same from a previous run,
+            parameters passed to ``execute_task()``. If the section and
+            parameters to ``execute_task`` are the same from a previous run,
             the cache will be looked up instead of executing ``self.analyze``.
         :raises RuntimeError:
             Raised when bear requirements are not fulfilled.
