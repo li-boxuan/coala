@@ -22,7 +22,7 @@ from coalib.settings.Section import Section
 
 def calculate_persistent_hash(obj):
     fingerprint_generator = sha1()
-    fingerprint_generator.update(pickle.dumps(obj))
+    fingerprint_generator.update(pickle.dumps(obj, protocol=4))
     return fingerprint_generator.digest()
 
 
