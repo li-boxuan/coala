@@ -198,7 +198,8 @@ class Bear:
             The file-dictionary containing a mapping of filenames to the
             according file contents.
         :param cache:
-            A cache the bear can use to speed up runs.
+            A cache the bear can use to speed up runs. If ``None``, no cache
+            will be used.
 
             The cache stores the results that were returned last time from the
             parameters passed to ``execute_tasks()``. If the section and
