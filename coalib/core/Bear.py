@@ -20,6 +20,12 @@ from coalib.settings.FunctionMetadata import FunctionMetadata
 from coalib.settings.Section import Section
 
 
+def calculate_persistent_hash(obj):
+    fingerprint_generator = sha1()
+    fingerprint_generator.update(pickle.dumps(obj))
+    return fingerprint_generator.digest()
+
+
 class Bear:
     """
     A bear contains the actual subroutine that is responsible for checking
@@ -448,9 +454,7 @@ class Bear:
         if self.cache is None:
             results = list(self.analyze(*args, **kwargs))
         else:
-            fingerprint_generator = sha1()
-            fingerprint_generator.update(pickle.dumps((args, kwargs)))
-            fingerprint = fingerprint_generator.digest()
+            fingerprint = calculate_persistent_hash((args, kwargs))
 
             if fingerprint in self.cache:
                 results = self.cache[fingerprint]
