@@ -33,4 +33,4 @@ class ProjectBear(Bear):
             omit={'self', 'files'})
 
     def generate_tasks(self):
-        return (tuple(), self._kwargs),
+        return ((self.file_dict,), self._kwargs),
