@@ -269,16 +269,50 @@ class BearTest(unittest.TestCase):
         args = 3, 4, 5
         kwargs = {}
         with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
-            mock.assert_not_called()
-
-            uut.execute_task(args, kwargs)
+            results = uut.execute_task(args, kwargs)
             mock.assert_called_once_with(*args, **kwargs)
+            self.assertEqual(results, list(args))
 
             mock.reset_mock()
 
-            uut.execute_task(args, kwargs)
+            results = uut.execute_task(args, kwargs)
             mock.assert_called_once_with(*args, **kwargs)
+            self.assertEqual(results, list(args))
 
+
+    def test_cache(self):
+        section = Section('test-section')
+        filedict = {}
+
+        cache = {}
+        uut = BearWithAnalysis(section, filedict, cache)
+
+        # Be sure that the cache is still empty on a new bear object before
+        # running anything.
+        self.assertFalse(cache)
+
+        args = 10, 11, 12
+        kwargs = {}
+        with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
+            # First time we have a cache miss.
+            results = uut.execute_task(args, kwargs)
+            mock.assert_called_once_with(*args, **kwargs)
+            self.assertEqual(results, list(args))
+            self.assertEqual(len(cache), 1)
+
+            # All following times we have a cache hit (we don't modify the
+            # cache in between).
+            for i in range(3):
+                mock.reset_mock()
+
+                results = uut.execute_task(args, kwargs)
+                mock.assert_not_called()
+                self.assertEqual(results, list(args))
+                self.assertEqual(len(cache), 1)
+
+
+    def test_existing_cache(self):
+        pass
 
 # TODO Caching tests:
 # TODO - test when cache=None (two runs and ensure non-caching)
