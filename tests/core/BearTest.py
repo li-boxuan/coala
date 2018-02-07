@@ -3,6 +3,7 @@ from itertools import permutations
 from os.path import abspath, exists, isfile, join, getmtime
 import shutil
 import unittest
+from unittest.mock import patch
 
 from dependency_management.requirements.PipRequirement import PipRequirement
 
@@ -254,6 +255,30 @@ class BearTest(unittest.TestCase):
             'REQUIREMENTS': set()}
 
         self.assertEqual(result, expected)
+
+    def test_no_cache(self):
+        # Two runs without using the cache shall always run analyze() again.
+        section = Section('test-section')
+        filedict = {}
+
+        uut = BearWithAnalysis(section, filedict)
+
+        # Ensure that omitting the cache-parameter means no cache.
+        self.assertIsNone(uut.cache)
+
+        args = 3, 4, 5
+        kwargs = {}
+        with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
+            mock.assert_not_called()
+
+            uut.execute_task(args, kwargs)
+            mock.assert_called_once_with(*args, **kwargs)
+
+            mock.reset_mock()
+
+            uut.execute_task(args, kwargs)
+            mock.assert_called_once_with(*args, **kwargs)
+
 
 # TODO Caching tests:
 # TODO - test when cache=None (two runs and ensure non-caching)
