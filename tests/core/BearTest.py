@@ -279,7 +279,6 @@ class BearTest(unittest.TestCase):
             mock.assert_called_once_with(*args, **kwargs)
             self.assertEqual(results, list(args))
 
-
     def test_cache(self):
         section = Section('test-section')
         filedict = {}
