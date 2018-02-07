@@ -310,6 +310,5 @@ class BearTest(unittest.TestCase):
                 self.assertEqual(results, list(args))
                 self.assertEqual(len(cache), 1)
 
-
     def test_existing_cache(self):
         pass
