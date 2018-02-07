@@ -188,7 +188,7 @@ class Bear:
                 cls.MAINTAINERS_EMAILS)
 
     @enforce_signature
-    def __init__(self, section: Section, file_dict: dict, cache: Cache=None):
+    def __init__(self, section: Section, file_dict: dict, cache: dict=None):
         """
         Constructs a new bear.
 
