@@ -290,9 +290,10 @@ class BearTest(unittest.TestCase):
         # running anything.
         self.assertFalse(cache)
 
-        args = 10, 11, 12
-        kwargs = {}
         with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
+            args = 10, 11, 12
+            kwargs = {}
+
             # First time we have a cache miss.
             results = uut.execute_task(args, kwargs)
             mock.assert_called_once_with(*args, **kwargs)
@@ -308,6 +309,22 @@ class BearTest(unittest.TestCase):
                 mock.assert_not_called()
                 self.assertEqual(results, list(args))
                 self.assertEqual(len(cache), 1)
+
+            # Invocation with different args should add another cache entry,
+            # and invoke analyze() again because those weren't cached before.
+            args = 500, 11, 12
+
+            results = uut.execute_task(args, kwargs)
+            mock.assert_called_once_with(*args, **kwargs)
+            self.assertEqual(results, list(args))
+            self.assertEqual(len(cache), 2)
+
+            mock.reset_mock()
+
+            results = uut.execute_task(args, kwargs)
+            mock.assert_not_called()
+            self.assertEqual(results, list(args))
+            self.assertEqual(len(cache), 2)
 
     def test_existing_cache(self):
         pass
