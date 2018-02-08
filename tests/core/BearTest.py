@@ -327,4 +327,31 @@ class BearTest(unittest.TestCase):
             self.assertEqual(len(cache), 2)
 
     def test_existing_cache(self):
-        pass
+        section = Section('test-section')
+        filedict = {}
+
+        # Start with some invalid cache values.
+        cache = {b'123456': [100, 101, 102]}
+        uut = BearWithAnalysis(section, filedict, cache)
+
+        args = -1, -2, -3
+        kwargs = {}
+
+        with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
+            # First time we have a cache miss.
+            results = uut.execute_task(args, kwargs)
+            mock.assert_called_once_with(*args, **kwargs)
+            self.assertEqual(results, list(args))
+            self.assertEqual(len(cache), 2)
+
+        # Create a new bear and reuse the cache from the same bear type used
+        # before in this test.
+        uut = BearWithAnalysis(section, filedict, cache)
+
+        with patch.object(uut, 'analyze', wraps=uut.analyze) as mock:
+            # Second time we hit the cache entry that was placed by the earlier
+            # bear.
+            results = uut.execute_task(args, kwargs)
+            mock.assert_not_called()
+            self.assertEqual(results, list(args))
+            self.assertEqual(len(cache), 2)
