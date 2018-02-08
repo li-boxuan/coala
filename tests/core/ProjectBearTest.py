@@ -139,3 +139,7 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
     def setUp(self):
         super().setUp()
         self.executor = ThreadPoolExecutor, tuple(), dict(max_workers=8)
+
+
+# TODO Add for each bear base type a test for caches: Properly test the lookup
+# TODO with settings.
