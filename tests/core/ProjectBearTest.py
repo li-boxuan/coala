@@ -148,7 +148,6 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
     # aren't multiprocessing capable. Thus put them here.
 
     def test_cache(self):
-        # Two runs without using the cache shall always run analyze() again.
         section = Section('test-section')
         filedict1 = {'file.txt': []}
         filedict2 = {'file.txt': ['first-line\n']}
