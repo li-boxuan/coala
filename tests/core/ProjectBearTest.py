@@ -176,8 +176,8 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
                                     expected=expected_results)
             # Due to https://bugs.python.org/issue28380, assert_not_called()
             # is not available. The fix for this bug was not backported to
-            # Python 3.5 or earlier, so to be compatible we have to manually
-            # assert.
+            # Python 3.5 or earlier, so to be compatible with 3.4 we have to
+            # manually assert.
             assert not mock.called
             assert len(cache) == 1
 
