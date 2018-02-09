@@ -261,9 +261,12 @@ class BearTest(unittest.TestCase):
         section = Section('test-section')
         filedict = {}
 
+        # Ensure that omitting the cache-parameter means no cache by default.
         uut = BearWithAnalysis(section, filedict)
+        self.assertIsNone(uut.cache)
 
-        # Ensure that omitting the cache-parameter means no cache.
+        # And also ensure that passing `None` explicitly is supported.
+        uut = BearWithAnalysis(section, filedict, None)
         self.assertIsNone(uut.cache)
 
         args = 3, 4, 5
