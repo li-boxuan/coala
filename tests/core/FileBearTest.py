@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import ANY, patch
 
 from coalib.core.FileBear import FileBear
 from coalib.settings.Section import Section
@@ -121,3 +122,53 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
     def setUp(self):
         super().setUp()
         self.executor = ThreadPoolExecutor, tuple(), dict(max_workers=8)
+
+    # Cache-tests require to be executed in the same Python process, as mocks
+    # aren't multiprocessing capable. Thus put them here.
+
+    def test_cache(self):
+        # Two runs without using the cache shall always run analyze() again.
+        section = Section('test-section')
+        filedict1 = {'file.txt': []}
+        filedict2 = {'file.txt': ['first-line\n'], 'file2.txt': ['xyz\n']}
+        filedict3 = {'file.txt': ['first-line\n'], 'file2.txt': []}
+        cache = {}
+
+        # Due to https://bugs.python.org/issue31807#msg306273, we can't use
+        # `autospec=True` together with `wraps`, `wraps` simply doesn't have
+        # any effect. This means we can't nicely use `self.assertResultsEqual`
+        # here. But we aren't actually interested in the results returned by
+        # the bear, we just want to be sure that the cache works and properly
+        # calls / doesn't call `analyze()`.
+
+        with patch.object(TestFileBear, 'analyze',
+                          autospec=True,
+                          return_value=[]) as mock:
+
+            uut = TestFileBear(section, filedict1, cache)
+            self.execute_run({uut})
+
+            mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
+            assert len(cache) == 1
+
+        with patch.object(TestFileBear, 'analyze',
+                          autospec=True,
+                          return_value=[]) as mock:
+
+            uut = TestFileBear(section, filedict2, cache)
+            self.execute_run({uut})
+
+            assert mock.call_count == 2
+            for filename, file in filedict2.items():
+                mock.assert_any_call(ANY, filename, file)
+            assert len(cache) == 3
+
+        with patch.object(TestFileBear, 'analyze',
+                          autospec=True,
+                          return_value=[]) as mock:
+
+            uut = TestFileBear(section, filedict3, cache)
+            self.execute_run({uut})
+
+            mock.assert_called_once_with(ANY, 'file2.txt', [])
+            assert len(cache) == 4
