@@ -9,7 +9,7 @@ class DependencyBear(Bear):
     You can specify dependency bears with the ``BEAR_DEPS`` field.
     """
 
-    def __init__(self, section, file_dict):
+    def __init__(self, section, file_dict, cache=None):
         """
         :param section:
             The section object where bear settings are contained. A section
@@ -17,8 +17,11 @@ class DependencyBear(Bear):
         :param file_dict:
             A dictionary containing filenames to process as keys and their
             contents (line-split with trailing return characters) as values.
+        :param cache:
+            A cache the bear can use to speed up runs. If ``None``, no cache
+            will be used.
         """
-        Bear.__init__(self, section, file_dict)
+        Bear.__init__(self, section, file_dict, cache)
 
         self._kwargs = self.get_metadata().create_params_from_section(section)
 
