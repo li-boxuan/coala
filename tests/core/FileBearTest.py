@@ -136,9 +136,8 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
         # Due to https://bugs.python.org/issue31807#msg306273, we can't use
         # `autospec=True` together with `wraps`, `wraps` simply doesn't have
         # any effect. This means we can't nicely use `self.assertResultsEqual`
-        # here. But we aren't actually interested in the results returned by
-        # the bear, we just want to be sure that the cache works and properly
-        # calls / doesn't call `analyze()`.
+        # here. Instead we are always returning no results at all and checking
+        # if the cache only stores those empty lists.
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
@@ -149,6 +148,8 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
 
             mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
             assert len(cache) == 1
+            for cache_value in cache.values():
+                assert cache_value == []
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
@@ -161,6 +162,8 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
             for filename, file in filedict2.items():
                 mock.assert_any_call(ANY, filename, file)
             assert len(cache) == 3
+            for cache_value in cache.values():
+                assert cache_value == []
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
@@ -171,3 +174,5 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
 
             mock.assert_called_once_with(ANY, 'file2.txt', [])
             assert len(cache) == 4
+            for cache_value in cache.values():
+                assert cache_value == []
