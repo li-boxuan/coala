@@ -149,9 +149,7 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
             mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
             assert len(cache) == 1
 
-        with patch.object(TestFileBear, 'analyze',
-                          autospec=True,
-                          side_effect=TestFileBear.analyze) as mock:
+            mock.reset_mock()
 
             self.assertResultsEqual(TestFileBear,
                                     section=section,
@@ -164,9 +162,7 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
                 mock.assert_any_call(ANY, filename, file)
             assert len(cache) == 3
 
-        with patch.object(TestFileBear, 'analyze',
-                          autospec=True,
-                          side_effect=TestFileBear.analyze) as mock:
+            mock.reset_mock()
 
             self.assertResultsEqual(TestFileBear,
                                     section=section,

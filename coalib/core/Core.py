@@ -124,6 +124,8 @@ def initialize_dependencies(bears):
             type_to_instance_map[bear] = bear
             type_to_instance_map[type(bear)] = bear
 
+        # TODO Dependency bears also need a cache, I need to think about how
+        # TODO to do it nicely... ugh...
         def instantiate_and_track(prev_bear_type, next_bear_type):
             if next_bear_type not in type_to_instance_map:
                 type_to_instance_map[next_bear_type] = (

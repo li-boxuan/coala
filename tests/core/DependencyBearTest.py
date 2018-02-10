@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from unittest.mock import ANY, patch
 
 from coalib.core.DependencyBear import DependencyBear
 from coalib.core.FileBear import FileBear
@@ -46,7 +47,7 @@ class TestBearDependentOnMultipleBears(DependencyBear):
 class DependencyBearTest(CoreTestBase):
 
     def assertResultsEqual(self, bear_type, expected,
-                           section=None, file_dict=None):
+                           section=None, file_dict=None, cache=None):
         """
         Asserts whether the expected results do match the output of the bear.
 
@@ -62,13 +63,16 @@ class DependencyBearTest(CoreTestBase):
         :param file_dict:
             A file-dictionary for the bear to use. By default uses an empty
             dictionary.
+        :param cache:
+            A cache the bear can use to speed up runs. If ``None``, no cache
+            will be used.
         """
         if section is None:
             section = Section('test-section')
         if file_dict is None:
             file_dict = {}
 
-        uut = bear_type(section, file_dict)
+        uut = bear_type(section, file_dict, cache)
 
         results = self.execute_run({uut})
 
@@ -221,49 +225,47 @@ class DependencyBearOnThreadPoolExecutorTest(DependencyBearTest):
 
     def test_cache(self):
         # TODO TBD (especially test dependency caching!)
-        """
         section = Section('test-section')
         filedict1 = {'file.txt': []}
         filedict2 = {'file.txt': ['first-line\n'], 'file2.txt': ['xyz\n']}
         filedict3 = {'file.txt': ['first-line\n'], 'file2.txt': []}
         cache = {}
 
-        # Due to https://bugs.python.org/issue31807#msg306273, we can't use
-        # `autospec=True` together with `wraps`, `wraps` simply doesn't have
-        # any effect. This means we can't nicely use `self.assertResultsEqual`
-        # here. But we aren't actually interested in the results returned by
-        # the bear, we just want to be sure that the cache works and properly
-        # calls / doesn't call `analyze()`.
+        # GlobalBear returns 1 result -> one task for DependencyBear
+        #
 
-        with patch.object(TestFileBear, 'analyze',
-                          autospec=True,
-                          return_value=[]) as mock:
+        patch2 = patch.object(
+            TestBearDependentOnProjectBear, 'analyze',
+            autospec=True,
+            side_effect=TestBearDependentOnProjectBear.analyze)
+        patch1 = patch.object(
+            TestProjectBear, 'analyze',
+            autospec=True,
+            side_effect=TestProjectBear.analyze)
 
-            uut = TestFileBear(section, filedict1, cache)
-            self.execute_run({uut})
+        with patch1 as dependency_mock, patch2 as dependant_mock:
 
-            mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
-            assert len(cache) == 1
+            self.assertResultsEqual(TestBearDependentOnProjectBear,
+                                    section=section,
+                                    file_dict=filedict1,
+                                    cache=cache,
+                                    expected=['file.txt(0)',
+                                              'TestProjectBear - file.txt(0)'])
 
-        with patch.object(TestFileBear, 'analyze',
-                          autospec=True,
-                          return_value=[]) as mock:
+            dependency_mock.assert_called_once_with(ANY, filedict1)
+            dependant_mock.assert_called_once_with(ANY, TestProjectBear, 'file.txt(0)')
+            assert len(cache) == 2
 
-            uut = TestFileBear(section, filedict2, cache)
-            self.execute_run({uut})
+            dependency_mock.reset_mock()
+            dependant_mock.reset_mock()
 
-            assert mock.call_count == 2
-            for filename, file in filedict2.items():
-                mock.assert_any_call(ANY, filename, file)
-            assert len(cache) == 3
+            self.assertResultsEqual(TestBearDependentOnProjectBear,
+                                    section=section,
+                                    file_dict=filedict1,
+                                    cache=cache,
+                                    expected=['file.txt(0)',
+                                              'TestProjectBear - file.txt(0)'])
 
-        with patch.object(TestFileBear, 'analyze',
-                          autospec=True,
-                          return_value=[]) as mock:
-
-            uut = TestFileBear(section, filedict3, cache)
-            self.execute_run({uut})
-
-            mock.assert_called_once_with(ANY, 'file2.txt', [])
-            assert len(cache) == 4
-        """
+            assert dependency_mock.assert_not_called()
+            assert dependant_mock.assert_not_called()
+            assert len(cache) == 2
