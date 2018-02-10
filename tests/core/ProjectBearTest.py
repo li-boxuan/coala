@@ -151,18 +151,19 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
         section = Section('test-section')
         filedict1 = {'file.txt': []}
         filedict2 = {'file.txt': ['first-line\n']}
-        expected_results = ['file.txt:[]']
+        expected_results1 = ['file.txt:[]']
+        expected_results2 = ["file.txt:['first-line\\n']"]
         cache = {}
 
         with patch.object(TestProjectBear, 'analyze',
                           autospec=True,
-                          return_value=expected_results) as mock:
+                          side_effect=TestProjectBear.analyze) as mock:
 
             self.assertResultsEqual(TestProjectBear,
                                     section=section,
                                     file_dict=filedict1,
                                     cache=cache,
-                                    expected=expected_results)
+                                    expected=expected_results1)
             mock.assert_called_once_with(ANY, filedict1)
             assert len(cache) == 1
 
@@ -172,7 +173,7 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
                                     section=section,
                                     file_dict=filedict1,
                                     cache=cache,
-                                    expected=expected_results)
+                                    expected=expected_results1)
             # Due to https://bugs.python.org/issue28380, assert_not_called()
             # is not available. The fix for this bug was not backported to
             # Python 3.5 or earlier, so to be compatible with 3.4 we have to
@@ -184,7 +185,7 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
                                     section=section,
                                     file_dict=filedict2,
                                     cache=cache,
-                                    expected=expected_results)
+                                    expected=expected_results2)
 
             mock.assert_called_once_with(ANY, filedict2)
             assert len(cache) == 2

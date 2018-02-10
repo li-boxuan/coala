@@ -136,55 +136,43 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
         filedict3 = {'file.txt': ['first-line\n'], 'file2.txt': []}
         cache = {}
 
-        # Due to https://bugs.python.org/issue31807, we can't use
-        # `autospec=True` together with `wraps`, `wraps` simply doesn't have
-        # any effect. We are now always returning no results at all and
-        # checking if we get this empty list as a result and if the cache only
-        # stores those empty lists.
-
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
-                          return_value=[]) as mock:
+                          side_effect=TestFileBear.analyze) as mock:
 
             self.assertResultsEqual(TestFileBear,
                                     section=section,
                                     file_dict=filedict1,
                                     cache=cache,
-                                    expected=[])
+                                    expected=list(filedict1.keys()))
 
             mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
             assert len(cache) == 1
-            for cache_value in cache.values():
-                assert cache_value == []
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
-                          return_value=[]) as mock:
+                          side_effect=TestFileBear.analyze) as mock:
 
             self.assertResultsEqual(TestFileBear,
                                     section=section,
                                     file_dict=filedict2,
                                     cache=cache,
-                                    expected=[])
+                                    expected=list(filedict2.keys()))
 
             assert mock.call_count == 2
             for filename, file in filedict2.items():
                 mock.assert_any_call(ANY, filename, file)
             assert len(cache) == 3
-            for cache_value in cache.values():
-                assert cache_value == []
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
-                          return_value=[]) as mock:
+                          side_effect=TestFileBear.analyze) as mock:
 
             self.assertResultsEqual(TestFileBear,
                                     section=section,
                                     file_dict=filedict3,
                                     cache=cache,
-                                    expected=[])
+                                    expected=list(filedict3.keys()))
 
             mock.assert_called_once_with(ANY, 'file2.txt', [])
             assert len(cache) == 4
-            for cache_value in cache.values():
-                assert cache_value == []
