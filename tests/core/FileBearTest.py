@@ -137,14 +137,15 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
         # `autospec=True` together with `wraps`, `wraps` simply doesn't have
         # any effect. This means we can't nicely use `self.assertResultsEqual`
         # here. Instead we are always returning no results at all and checking
-        # if the cache only stores those empty lists.
+        # if we get this empty list as a result and if the cache only stores
+        # those empty lists.
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
                           return_value=[]) as mock:
 
             uut = TestFileBear(section, filedict1, cache)
-            self.execute_run({uut})
+            assert self.execute_run({uut}) == []
 
             mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
             assert len(cache) == 1
@@ -156,7 +157,7 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
                           return_value=[]) as mock:
 
             uut = TestFileBear(section, filedict2, cache)
-            self.execute_run({uut})
+            assert self.execute_run({uut}) == []
 
             assert mock.call_count == 2
             for filename, file in filedict2.items():
@@ -170,7 +171,7 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
                           return_value=[]) as mock:
 
             uut = TestFileBear(section, filedict3, cache)
-            self.execute_run({uut})
+            assert self.execute_run({uut}) == []
 
             mock.assert_called_once_with(ANY, 'file2.txt', [])
             assert len(cache) == 4
