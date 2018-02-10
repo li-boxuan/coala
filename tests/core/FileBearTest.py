@@ -23,7 +23,7 @@ class TestFileBearWithParameters(FileBear):
 class FileBearTest(CoreTestBase):
 
     def assertResultsEqual(self, bear_type, expected,
-                           section=None, file_dict=None):
+                           section=None, file_dict=None, cache=None):
         """
         Asserts whether the expected results do match the output of the bear.
 
@@ -39,13 +39,16 @@ class FileBearTest(CoreTestBase):
         :param file_dict:
             A file-dictionary for the bear to use. By default uses an empty
             dictionary.
+        :param cache:
+            A cache the bear can use to speed up runs. If ``None``, no cache
+            will be used.
         """
         if section is None:
             section = Section('test-section')
         if file_dict is None:
             file_dict = {}
 
-        uut = bear_type(section, file_dict)
+        uut = bear_type(section, file_dict, cache)
 
         results = self.execute_run({uut})
 
@@ -135,17 +138,19 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
 
         # Due to https://bugs.python.org/issue31807#msg306273, we can't use
         # `autospec=True` together with `wraps`, `wraps` simply doesn't have
-        # any effect. This means we can't nicely use `self.assertResultsEqual`
-        # here. Instead we are always returning no results at all and checking
-        # if we get this empty list as a result and if the cache only stores
-        # those empty lists.
+        # any effect. We are now always returning no results at all and
+        # checking if we get this empty list as a result and if the cache only
+        # stores those empty lists.
 
         with patch.object(TestFileBear, 'analyze',
                           autospec=True,
                           return_value=[]) as mock:
 
-            uut = TestFileBear(section, filedict1, cache)
-            assert self.execute_run({uut}) == []
+            self.assertResultsEqual(TestFileBear,
+                                    section=section,
+                                    file_dict=filedict1,
+                                    cache=cache,
+                                    expected=[])
 
             mock.assert_called_once_with(ANY, *next(iter(filedict1.items())))
             assert len(cache) == 1
@@ -156,8 +161,11 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
                           autospec=True,
                           return_value=[]) as mock:
 
-            uut = TestFileBear(section, filedict2, cache)
-            assert self.execute_run({uut}) == []
+            self.assertResultsEqual(TestFileBear,
+                                    section=section,
+                                    file_dict=filedict2,
+                                    cache=cache,
+                                    expected=[])
 
             assert mock.call_count == 2
             for filename, file in filedict2.items():
@@ -170,8 +178,11 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
                           autospec=True,
                           return_value=[]) as mock:
 
-            uut = TestFileBear(section, filedict3, cache)
-            assert self.execute_run({uut}) == []
+            self.assertResultsEqual(TestFileBear,
+                                    section=section,
+                                    file_dict=filedict3,
+                                    cache=cache,
+                                    expected=[])
 
             mock.assert_called_once_with(ANY, 'file2.txt', [])
             assert len(cache) == 4
