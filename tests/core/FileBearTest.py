@@ -136,7 +136,7 @@ class FileBearOnThreadPoolExecutorTest(FileBearTest):
         filedict3 = {'file.txt': ['first-line\n'], 'file2.txt': []}
         cache = {}
 
-        # Due to https://bugs.python.org/issue31807#msg306273, we can't use
+        # Due to https://bugs.python.org/issue31807, we can't use
         # `autospec=True` together with `wraps`, `wraps` simply doesn't have
         # any effect. We are now always returning no results at all and
         # checking if we get this empty list as a result and if the cache only
