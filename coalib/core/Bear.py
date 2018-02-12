@@ -1,11 +1,9 @@
 from collections import defaultdict
 from functools import partial
-from hashlib import sha1
 import inspect
 import logging
 from os import makedirs
 from os.path import join, abspath, exists
-import pickle
 
 from appdirs import user_data_dir
 
@@ -14,16 +12,11 @@ from coala_utils.decorators import (enforce_signature, classproperty,
 
 import requests
 
+from coalib.core.PersistentHash import persistent_hash
 from coalib.results.Result import Result
 from coalib.settings.ConfigurationGathering import get_config_directory
 from coalib.settings.FunctionMetadata import FunctionMetadata
 from coalib.settings.Section import Section
-
-
-def calculate_persistent_hash(obj):
-    fingerprint_generator = sha1()
-    fingerprint_generator.update(pickle.dumps(obj, protocol=4))
-    return fingerprint_generator.digest()
 
 
 class Bear:
@@ -456,7 +449,7 @@ class Bear:
         if self.cache is None:
             results = list(self.analyze(*args, **kwargs))
         else:
-            fingerprint = calculate_persistent_hash((args, kwargs))
+            fingerprint = persistent_hash((args, kwargs))
 
             if fingerprint in self.cache:
                 results = self.cache[fingerprint]
