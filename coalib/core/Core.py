@@ -258,7 +258,7 @@ class Session:
                         # in the main process.
                         future = self.event_loop.run_in_executor(
                             None, self._execute_task_with_cache,
-                            task)
+                            bear, task)
 
                     futures.add(future)
 
