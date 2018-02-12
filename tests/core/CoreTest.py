@@ -667,7 +667,7 @@ class CoreOnSpecificExecutorTest(CoreTestBase):
         for bears in [set(), {bear}]:
             executor = ThreadPoolExecutor(max_workers=1)
 
-            self.execute_run(bears, executor)
+            self.execute_run(bears, executor=executor)
 
             # Submitting new tasks should raise an exception now.
             with self.assertRaisesRegex(
