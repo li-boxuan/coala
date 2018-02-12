@@ -12,7 +12,6 @@ from coala_utils.decorators import (enforce_signature, classproperty,
 
 import requests
 
-from coalib.core.PersistentHash import persistent_hash
 from coalib.results.Result import Result
 from coalib.settings.ConfigurationGathering import get_config_directory
 from coalib.settings.FunctionMetadata import FunctionMetadata
@@ -181,8 +180,7 @@ class Bear:
                 cls.MAINTAINERS_EMAILS)
 
     @enforce_signature
-    def __init__(self, section: Section, file_dict: dict,
-                 cache: (dict, None)=None):
+    def __init__(self, section: Section, file_dict: dict):
         """
         Constructs a new bear.
 
@@ -191,20 +189,11 @@ class Bear:
         :param file_dict:
             The file-dictionary containing a mapping of filenames to the
             according file contents.
-        :param cache:
-            A cache the bear can use to speed up runs. If ``None``, no cache
-            will be used.
-
-            The cache stores the results that were returned last time from the
-            parameters passed to ``execute_task()``. If the section and
-            parameters to ``execute_task`` are the same from a previous run,
-            the cache will be looked up instead of executing ``self.analyze``.
         :raises RuntimeError:
             Raised when bear requirements are not fulfilled.
         """
         self.section = section
         self.file_dict = file_dict
-        self.cache = cache
 
         self._dependency_results = defaultdict(list)
 
@@ -446,18 +435,7 @@ class Bear:
         :return:
             A list of results from the bear.
         """
-        if self.cache is None:
-            results = list(self.analyze(*args, **kwargs))
-        else:
-            fingerprint = persistent_hash((args, kwargs))
-
-            if fingerprint in self.cache:
-                results = self.cache[fingerprint]
-            else:
-                results = list(self.analyze(*args, **kwargs))
-                self.cache[fingerprint] = results
-
-        return results
+        return list(self.analyze(*args, **kwargs))
 
     def analyze(self, *args, **kwargs):
         """

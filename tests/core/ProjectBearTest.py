@@ -49,9 +49,9 @@ class ProjectBearTest(CoreTestBase):
         if file_dict is None:
             file_dict = {}
 
-        uut = bear_type(section, file_dict, cache)
+        uut = bear_type(section, file_dict)
 
-        results = self.execute_run({uut})
+        results = self.execute_run({uut}, cache)
 
         self.assertEqual(sorted(expected), sorted(results))
 
@@ -166,6 +166,7 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
                                     expected=expected_results1)
             mock.assert_called_once_with(ANY, filedict1)
             assert len(cache) == 1
+            assert len(next(iter(cache.values()))) == 1
 
             mock.reset_mock()
 
@@ -180,6 +181,7 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
             # manually assert.
             assert not mock.called
             assert len(cache) == 1
+            assert len(next(iter(cache.values()))) == 1
 
             self.assertResultsEqual(TestProjectBear,
                                     section=section,
@@ -188,4 +190,5 @@ class ProjectBearOnThreadPoolExecutorTest(ProjectBearTest):
                                     expected=expected_results2)
 
             mock.assert_called_once_with(ANY, filedict2)
-            assert len(cache) == 2
+            assert len(cache) == 1
+            assert len(next(iter(cache.values()))) == 2
