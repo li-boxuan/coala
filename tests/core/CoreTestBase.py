@@ -4,7 +4,8 @@ from coalib.core.Core import run
 
 
 class CoreTestBase(unittest.TestCase):
-    def execute_run(self, bears, executor=None):
+    # TODO Add docstring for "cache" param.
+    def execute_run(self, bears, cache=None, executor=None):
         """
         Executes a coala run and returns the results.
 
@@ -33,6 +34,6 @@ class CoreTestBase(unittest.TestCase):
         def capture_results(result):
             results.append(result)
 
-        run(bears, capture_results, executor)
+        run(bears, capture_results, cache, executor)
 
         return results
